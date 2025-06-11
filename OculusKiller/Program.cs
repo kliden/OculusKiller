@@ -14,6 +14,8 @@ namespace OculusKiller
         {
             try
             {
+                Process.Start("C:\\Users\\solus\\Mine\\Programs\\$ Scripts\\lh_ON.bat");
+
                 string openVrPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"openvr\openvrpaths.vrpath");
                 if (File.Exists(openVrPath))
                 {
