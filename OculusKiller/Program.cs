@@ -35,6 +35,8 @@ namespace OculusKiller
                             vrMonitorProcesses = Process.GetProcessesByName("vrmonitor");
                         }
 
+                        Process.Start("C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\VRChat.exe");
+
                         // This is the one we actually need to wait for to exit when the user clicks "EXIT VR" in the SteamVR dashboard.
                         if (vrMonitorProcesses.Length > 0)
                         {
@@ -67,8 +69,10 @@ namespace OculusKiller
 
                             // The OVRServiceLauncher will immediately re-launch OVRServer and the OculusClient window,
                             // which is kind of annoying, but at least it will set our audio/microphone devices back to the default ones.
-                            
+
                             // We can safely exit now, since killing the OVRServer process already disconnected the headset.
+
+                            Process.Start("C:\\Users\\solus\\Mine\\Programs\\$ Scripts\\lh_OFF.bat");
                         }
                         else
                             MessageBox.Show("Could not find vrmonitor process.");
