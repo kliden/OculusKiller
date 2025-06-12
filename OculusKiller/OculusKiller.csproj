@@ -59,4 +59,7 @@
     <None Include="Zuccverse.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>update_oculus_killer.bat</PostBuildEvent>
+  </PropertyGroup>
 </Project>
