@@ -38,7 +38,7 @@ namespace OculusKiller
                         }
 
                         Thread.Sleep(1000);
-                        Process.Start("C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\VRChat.exe");
+                        Process.Start("C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\launch.exe");
 
                         // This is the one we actually need to wait for to exit when the user clicks "EXIT VR" in the SteamVR dashboard.
                         if (vrMonitorProcesses.Length > 0)
