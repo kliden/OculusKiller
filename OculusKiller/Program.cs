@@ -6,15 +6,38 @@ using System.Web.Script.Serialization;
 using System.Linq;
 using System.Threading;
 
+
 namespace OculusKiller
 {
     public class Program
     {
+        public const string MAIN_DIR = @"C:\Users\solus\Mine\Programs\VR";
+        public static readonly string STARTUP_DIR = Path.Combine(MAIN_DIR, "Startup");
+        public static readonly string SHUTDOWN_DIR = Path.Combine(MAIN_DIR, "Shutdown");
+
+        static string GetShortcutTarget(string shortcutFile)
+        {
+            var shell = new IWshRuntimeLibrary.WshShell();
+            var link = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutFile);
+            return link.TargetPath;
+        }
+
+        static void RunFiles(string directory)
+        {
+            foreach (string file in Directory.GetFiles(directory))
+            {
+                var runnableFile = file;
+                if (file.EndsWith(".lnk"))
+                    runnableFile = GetShortcutTarget(file);
+                Process.Start(runnableFile);
+            }
+        }
+
         public static void Main()
         {
             try
             {
-                Process.Start("C:\\Users\\solus\\Mine\\Programs\\$ Scripts\\lh_ON.bat");
+                RunFiles(STARTUP_DIR);
 
                 string openVrPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"openvr\openvrpaths.vrpath");
                 if (File.Exists(openVrPath))
@@ -75,7 +98,7 @@ namespace OculusKiller
 
                             // We can safely exit now, since killing the OVRServer process already disconnected the headset.
 
-                            Process.Start("C:\\Users\\solus\\Mine\\Programs\\$ Scripts\\lh_OFF.bat");
+                            RunFiles(SHUTDOWN_DIR);
                         }
                         else
                             MessageBox.Show("Could not find vrmonitor process.");
