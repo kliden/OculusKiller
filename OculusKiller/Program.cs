@@ -11,7 +11,9 @@ namespace OculusKiller
 {
     public class Program
     {
-        public const string MAIN_DIR = @"C:\Users\solus\Mine\Programs\VR";
+        public static string HOME_DIR = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        public static string MAIN_DIR = Path.Combine(HOME_DIR,"Mine", "Programs", "VR");
+        public static string LOG = Path.Combine(MAIN_DIR, "log.txt");
         public static readonly string STARTUP_DIR = Path.Combine(MAIN_DIR, "Startup");
         public static readonly string SHUTDOWN_DIR = Path.Combine(MAIN_DIR, "Shutdown");
 
@@ -24,33 +26,44 @@ namespace OculusKiller
 
         static void RunFiles(string directory)
         {
+            Log("Running files in " + directory);
             foreach (string file in Directory.GetFiles(directory))
             {
                 var runnableFile = file;
                 if (file.EndsWith(".lnk"))
                     runnableFile = GetShortcutTarget(file);
+                Log("Running: " + runnableFile);
                 Process.Start(runnableFile);
             }
         }
 
         public static void Main()
         {
+            Log("Starting.");
             try
             {
                 RunFiles(STARTUP_DIR);
 
+                Log("Checking for OpenVR.");
                 string openVrPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"openvr\openvrpaths.vrpath");
                 if (File.Exists(openVrPath))
                 {
+                    Log("OpenVR found.");
+
                     var jss = new JavaScriptSerializer();
                     string jsonString = File.ReadAllText(openVrPath);
                     dynamic steamVrPath = jss.DeserializeObject(jsonString);
 
+                    Log("Checking for VR Startup.");
+
                     string vrStartupPath = Path.Combine(steamVrPath["runtime"][0].ToString(), @"bin\win64\vrstartup.exe");
                     if (File.Exists(vrStartupPath))
                     {
+                        Log("VR Startup found.");
+
                         Process vrStartupProcess = Process.Start(vrStartupPath);
 
+                        Log("Wait for vrmonitor.exe.");
                         // At this point, vrstartup.exe will launch vrmonitor.exe.
                         var sw = Stopwatch.StartNew();
                         var vrMonitorProcesses = Process.GetProcessesByName("vrmonitor");
@@ -61,11 +74,16 @@ namespace OculusKiller
                         }
 
                         Thread.Sleep(1000);
-                        Process.Start("C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\launch.exe");
 
                         // This is the one we actually need to wait for to exit when the user clicks "EXIT VR" in the SteamVR dashboard.
                         if (vrMonitorProcesses.Length > 0)
                         {
+                            Log("vrmonitor.exe is running.");
+
+                            Log("Launching VRChat.");
+                            Process.Start("C:\\Program Files (x86)\\Steam\\steamapps\\common\\VRChat\\launch.exe");
+
+                            Log("Waiting for VR exit.");
                             // While we're waiting for the user to exit VR from the SteamVR dashboard,
                             // we need to watch for the Oculus client being closed or the service being stopped.
                             // Otherwise, SteamVR will spin and hang when it gets detached from the service.
@@ -85,7 +103,8 @@ namespace OculusKiller
                                 Thread.Sleep(1000);
                             }
 
-
+                            Log("VR processes have exited.");
+                            Log("Killing OVRServer.");
                             // VRMonitor has exited, so kill the OVRServer process (which might end in _x86 or _x64) so it doesn't restart us when we exit.
                             foreach (var process in Process.GetProcesses().Where(p => p.ProcessName.StartsWith("OVRServer")))
                             {
@@ -99,6 +118,7 @@ namespace OculusKiller
                             // We can safely exit now, since killing the OVRServer process already disconnected the headset.
 
                             RunFiles(SHUTDOWN_DIR);
+                            Log("Stopping.");
                         }
                         else
                             MessageBox.Show("Could not find vrmonitor process.");
@@ -113,6 +133,13 @@ namespace OculusKiller
             {
                 MessageBox.Show($"An exception occured while attempting to find SteamVR!\n\nMessage: {e}");
             }
+        }
+
+        public static void Log(string msg)
+        {
+            var currentDateTime = DateTime.Now;
+            var formattedDateTime = currentDateTime.ToString("dddd, dd MMMM yyyy HH:mm:ss");
+            File.AppendAllText(LOG, formattedDateTime + " => " + msg);
         }
     }
 }
