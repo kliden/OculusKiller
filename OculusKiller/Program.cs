@@ -139,7 +139,7 @@ namespace OculusKiller
         {
             var currentDateTime = DateTime.Now;
             var formattedDateTime = currentDateTime.ToString("dddd, dd MMMM yyyy HH:mm:ss");
-            File.AppendAllText(LOG, formattedDateTime + " => " + msg);
+            File.AppendAllText(LOG, formattedDateTime + " => " + msg + "\n");
         }
     }
 }
